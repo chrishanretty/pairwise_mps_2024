@@ -141,9 +141,6 @@ ui <- fluidPage(
                             a(href= 'https://github.com/chrishanretty/pairwise_mps_2024/blob/main/article/article.pdf', 'working paper'),
                             ". If you've ever heard of a Bradley-Terry model, or if you know about Elo scores in chess, you should be able to understand the key idea behind pairwise comparisons, even if the implementation is a bit more complicated than either of those models. "),
                           ## 
-                          h4("Where can I find the results for the 2019-2024 parliament?"),
-                          p("We're currently preparing an archive version of the results for the 2019-2024 parliament. Please bear with us. "),
-                          ## 
                           h4("Why are there no Northern Irish politicians?"),
                           p("We did survey councillors in Northern Ireland, but when we try to model their responses it's hard to fit the responses on the same scale that we use for MPs in England, Scotland and Wales. "),
                           ## 
@@ -163,12 +160,21 @@ ui <- fluidPage(
                           h4("Can I download the data?"),
                           p("Yes: you can either download "),
                           tags$ul(
-                                   tags$li(tags$a("this Excel spreadsheet", href = "https://github.com/chrishanretty/pairwise_mps/raw/a11e77efc875abe6d0c62a91d6da04e85d9557fd/outputs/mpsleftright_excel.xlsx"),
+                                   tags$li(tags$a("this Excel spreadsheet", href = "https://github.com/chrishanretty/pairwise_mps_2024/blob/main/outputs/mpsleftright_excel.xlsx"),
                                            ", which gives MP names, each MPs' party, their average score, their average rank, and 'low' and 'high' scores and ranks (explained in the spreadsheet). The scores have been rescaled so that the lowest (most left-wing) score is 0, and the highest (most right-wing) score is 100. "),
-                                   tags$li(tags$a("this comma separated values file", href = "https://github.com/chrishanretty/pairwise_mps/raw/main/outputs/mpsleftright_full.csv.gz"),
-                                           ", which includes the full output of the measurement model, with ONS constituency identifiers and TheyWorkForYou person codes")
+                                   tags$li(tags$a("this comma separated values file", href = "https://github.com/chrishanretty/pairwise_mps_2024/blob/main/outputs/mpsleftright_full.csv.gz"),
+                                           ", which includes the full output of the measurement model, with ONS constituency identifiers and Wikidata person codes")
                                ),
                           p("If you don't know which file to use, use the Excel spreadsheet. "),
+                          h4("Where can I find the results for the 2019-2024 parliament?"),
+                          p("These are available, like the release above, in...  "),
+                          tags$ul(
+                                   tags$li(tags$a("this Excel spreadsheet", href = "https://github.com/chrishanretty/pairwise_mps/blob/main/outputs/mpsleftright_excel.xlsx"),
+                                           ", which gives MP names, each MPs' party, their average score, their average rank, and 'low' and 'high' scores and ranks (explained in the spreadsheet). The scores have been rescaled so that the lowest (most left-wing) score is 0, and the highest (most right-wing) score is 100. "),
+                                   tags$li(tags$a("this comma separated values file", href = "https://github.com/chrishanretty/pairwise_mps/blob/main/outputs/mpsleftright_full.csv.gz"),
+                                           ", which includes the full output of the measurement model, with ONS constituency identifiers and TheyWorkForYou person codes")
+                               ),
+                          ## 
                           h4("Who funded this research?"),
                           p("The first survey was the result of an ongoing partnership between Survation and Royal Holloway. The second survey was funded by ",
                             a(href = "https://ukandeu.ac.uk/", "UK in a Changing Europe"))
