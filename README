@@ -1,0 +1,44 @@
+The left-right positions of British MPs inferred from a survey of local councillors
+===
+
+This repository contains the R code and data necessary to replicate
+the findings in the above note.
+
+It does not contain the raw data, which could in principle enable
+respondents to be identified.
+
+The repository has the following directories:
+
+ - R/
+ - article/
+ - data/
+ - working/
+ - output/
+ - shiny_pairwise_mps/
+
+The directory `R` contains eight R files, but of these the first six
+are used to prepare the comparisons, generate the survey script used,
+and tidy the raw responses. Researchers who wish to replicate the
+results should concentrate on 007_model_both_waves.R and
+008_prepare_both_waves_outputs.R.
+
+The two outputs of the note are contained in `output/`; these are:
+
+ - `summary_statistics_file.csv`: a spreadsheet with one row per MP,
+   where MPs are identified by their wikidata identifier, their
+   constituency and party over the 2019-2024 and 2024-
+   parliaments. The positions are contained in columns `econ_mean`,
+   `econ_lo`, and `econ_hi`, and `cult_mean`, `cult_lo`, and
+   `cult_hi`; these are posterior means, the 5th percentile of the
+   posterior distribution, and the 95th percentile of the posterior
+   distribution
+   
+ - `mpsleftright_full.csv.gz`: a zipped CSV file with one row per
+   MP-by-dimension-by-iteration combination. Rows with dimension equal
+   to one refer to the MP's position on the economic dimension; rows
+   with dimension equal to two refer to the MP's position on the
+   cultural dimension.
+
+The data/ folder contains some other files which are used in the
+article, which is a Quarto markdown file which pulls in the outputs
+and other data. 

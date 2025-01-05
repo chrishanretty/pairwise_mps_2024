@@ -1,0 +1,1446 @@
+---
+title: "The left-right positions of British MPs inferred from a survey of local councillors"
+published: "Working paper"
+code-repo: "Access the code, data, and analysis at <>"
+correspondence-prefix: "Correspondence concerning this article should be addressed to"
+author:
+  - name: Chris Hanretty
+    email: chris.hanretty@rhul.ac.uk
+    orcid: 0000-0002-3948-3914
+    title: Professor of Politics
+    affiliations: 
+      - id: rhul
+        name: "Royal Holloway, University of London"
+        department: "Department of Politics, International Relations and Philosophy"
+        address: McCrea 1-08
+        city: Egham
+        region: Surrey
+        country: United Kingdom
+        postal-code: TW20 0EX
+    attributes:
+      corresponding: true
+  - name: Vasil Lazarov
+    email: vasil.lazarov@survation.com
+    title: PhD student
+    affiliations:
+      - id: survation
+        name: Survation
+      - ref: rhul
+abstract: "We present local councillors in England, Wales and Scotland with pairwise comparisons between MPs in their local area and two anchor MPs and ask them to identify the more left-wing MP on economic issues (first and second survey waves) and on cultural issues (second wave only). We infer MPs' positions on the economic and cultural left-right dimension from the responses to these pairwise choices. The estimates of MPs' positions have good face validity, but our estimates or MPs' positions on the cultural dimension are nearly identical to our estimates of the MPs' positions on the economic dimension, suggesting that knowledgeable respondents cannot distinguish MPs' positions on these two dimensions. Our estimates can be used to study the effects of MPs' position on behaviour in the party and in the legislature. "
+thanks: "Thanks to Survation for hosting these questions on their omnibus survey of local councillors. Particular thanks to David Izamoje for setting up the script seen by councillors. "
+additional-info: |
+  We have no known conflict of interest to disclose.
+keywords:
+  - expert survey
+  - ideal points
+  - ordinal regression
+date: January 2, 2025
+bibliography: biblio.bib
+mainfont: "TeX Gyre Pagella"
+sansfont: "TeX Gyre Heros"
+mathfont: "Asana Math"
+prefer-html: true
+execute:
+  echo: false
+  message: false
+  warning: false
+format:
+  hikmah-pdf:
+    number-sections: true
+    keep-tex: true
+    include-in-header:
+      text: |
+        \usepackage{amsmath}
+##  hikmah-manuscript-docx: default
+---
+
+<!--
+
+Structure needs to be:
+
+ - introduction
+ - wave 1:
+ - wave 2: two dimensions
+ - combining multiple waves
+ 
+-->
+
+
+```{r}
+here::i_am("article/article.qmd")
+suppressPackageStartupMessages(library(tidyverse))
+library(knitr)
+library(ggbeeswarm)
+library(kableExtra)
+library(stringr)
+library(scales)
+```
+
+# Introduction
+
+The measurement of actors' positions in political space is a key task
+of political science. Most effort has been spent on estimating the
+positions of parties in a one-dimensional, left-right, political
+space; but for polities which use candidate-centred electoral systems,
+or which have politically relevant within-party disagreement, knowing
+the positions of individual legislators is also
+important. Unfortunately, measuring individual legislators' positions
+is difficult outside of a small number of countries. Most legislators
+do not issue personal manifestos or policy platforms
+[cf. @catalinac2018positioning], meaning we cannot scale legislators
+in the same way as (for example) the Comparative Manifesto Project
+scales political parties [@volkens2013mapping]. Although legislators
+do talk and vote in parliaments, these acts are often strategic:
+scaling techniques used successful to analyse congressional roll-calls
+can fail to recover left-right positions where there are strong
+government-opposition dynamics and where extremes of left and right
+join together to vote against the middle [@spirling2007uk].[^edms] The
+analysis of legislative speech generally also tends to recover
+government-opposition dynamics more than left-right position
+[@lauderdale2016measuring].[^topics] Whilst expert surveys have proved
+tremendously useful in the study of party systems, few political
+scientists would be able to place hundreds of MPs on a 0-10 scale with
+as much equanimity as they place parties. Where political scientists
+do make expert assessments of individual MPs, these assessments are
+typically coarse-grained [@heppell2013cameron].
+
+[^edms]: Some non-strategic legislative behaviours can be analysed
+    [@kellermann2012estimating], but these are becoming less popular
+    (and thus less informative)
+
+[^topics]: Latent positions on specific issues can be recovered, but
+    this requires a careful selection both of texts and reference
+    points. See @o2022transformation. 
+
+In this note, we provide estimates of the economic left-right
+positions of British MPs in the 2019-2024 and 2024-
+parliaments. Estimating the positions of British legislators is
+important because within-party disagreement in Britain has been
+increasing over time, and because MPs' preferences have strongly
+conditioned or determined the identity of four of the last five
+British prime ministers.[^pms] We estimate positions on the basis of a
+survey of local councillors. We presented councillors with up to six
+pairwise comparisons between MPs in their local area and two "anchor"
+MPs (Prime Minister Rishi Sunak and Labour leader Sir Keir
+Starmer). This pairwise approach has previously been used by
+@breunig2021measuring and @hopkins2022trump; our application uses a
+richer set of response categories and presented only local
+comparisons. 
+
+[^pms]: Theresa May was elected Conservative party leader without a
+    membership vote after four ballots of Conservative MPs; Boris
+    Johnson became leader by beating Jeremy Hunt in a membership vote
+    after eight other candidates were eliminated by MPs; Liz Truss
+    became leader by beating Rishi Sunak in a membership vote after
+    six other candidates were eliminated by MPs; Rishi Sunak
+    subsequently became leader without any membership vote or ballot
+    amongst MPs. Sir Keir Starmer became Labour leader after a
+    membership ballot, but was prohibitive favourite after receiving
+    twice as many nominations from parliamentary colleagues as the
+    next best-placed candidate (Rebecca Long-Bailey).
+	
+Although the details of our survey differed slightly between the two
+survey waves (conducted in late 2023 and 2024 respectively), we asked
+councillors to pick the more right-wing on economic and cultural
+issues, choosing between five different response options. We analyze
+these ordinal responses using a Bayesian ordinal logistic regression
+[@burkner2019ordinal] with symmetric thresholds [@johnson2003use]. The
+use of Bayesian methods allows us to work directly with the
+probability that a named MP is more left- or right-wing than a
+comparison MP and calculate measures of uncertainty for derived
+statistics such as rank-order. Our estimates should prove useful to
+researchers interested in parliamentary representation in the United
+Kingdom and more generally.
+
+There are five sections to this note. In section two, we provide a
+description of the survey data, giving details on the total number of
+respondents, the total number of pairwise comparisons, and how we
+presented respondents with MPs. In section three, we describe the
+model that we use. Because we have to deal with positions which are
+structured by party, time and different dimensions, this section is
+necessarily long and detailed. In section four, we discuss the
+estimates of MPs' positions, with a view to establishing face validity
+and to describing how confident the model can be about the positions
+of particular MPs. In the final section we discuss some of the
+limitations of the research.
+
+# Description of the survey
+
+This note is based on two surveys of local councillors in England,
+Wales and Scotland.[^ni] The first survey was conducted between the
+7th August and 3rd September 2023, and asked about members of the
+2019 - 2024 parliament. The second survey was conducted between 14th
+and 24th October 2024, and asked about members of the parliament
+elected in the 2024 general election. In total, 1486 councillors
+responded to the first survey, and 1027 to the second survey. 
+
+[^ni]: We also surveyed local councillors in Northern Ireland, but
+    including Northern Irish MPs in the analysis created problems of
+    model fit, possibly because Northern Irish respondents are
+    evaluating the anchor politicians (Sir Keir Starmer and Rishi
+    Sunak) in a different way to respondents in the other three
+    countries. 
+
+Rather than asking respondents to evaluate a single politician by
+placing them on a scale, we asked respondents to compare politicians
+two at a time. In the first survey, respondents were presented with
+two MPs and asked to pick which MP was the *more left-wing* on
+*economic* issues. Respondents had six different response options:
+they could say that the first-named MP was much more left-wing; that
+the first-named MP was somewhat more left-wing; that the two MPs were
+about the same; that the second-named MP was somewhat more left-wing;
+that the second-named MP was much more left-wing, or that they did not
+know enough to say. Although we have described these response options
+in terms of the first- and second-named MP, the response options seen
+by respondents featured the actual names of the MPs. Respondents to
+the first wave were asked to make up to six comparisons. The number of
+comparisons could be fewer than six if there were few MPs in the
+respondent's local area, as defined below. 
+
+In the second survey, we changed the question wording. We did this
+because we wanted to ask about MPs' positions on the cultural
+dimension as well as the economic dimension. We began the survey by
+asking respondents to think about economic issues. We then presented
+respondents with up two six comparisons and asked them to say whether
+the first-named MP was much more *economically conservative*, somewhat
+more economically conservative, and so on. We then asked respondents
+to consider cultural issues. Once again we presented respondents with
+MPs to compare, but asked them to say which MPs was more *culturally
+conservative*. We asked respondents to pick the more *conservative* of
+the two MPs because we expected that some respondents would interpret
+"left" and "right" to have economic content only (such that we could
+not ask them to pick the more left-wing MP on cultural issues), and
+because the word "conservative" picks out a right-leaning position on
+both the economic and social dimensions, which is not true of words
+like *liberal*, which (in British usage) can imply a laissez-faire
+economic policy. 
+
+We have described respondents as comparing MPs "in their local
+area". Specifically, we match each respondent's local council to the
+"upper tier local authority area" (UTLA). The meaning of UTLA differs
+between country. For English respondents in district councils, this is
+their county council. For English respondents in unitary authorities,
+this is the unitary authority itself. For respondents in Scotland and
+Wales, it is simply the local authority. For each UTLA we identify all
+Westminster constituencies which entirely or partly covered by that
+area. In the second wave of the survey, where a UTLA was represented
+by a single Westminster constituency, we grouped that UTLA with the
+contiguous UTLA represented by the fewest Westminster MPs. We then
+generate all pairwise comparisons of MPs serving those constituencies,
+*plus* the two anchor MPs, Sir Keir Starmer and Rishi Sunak. We ask
+include these two anchor MPs in order to place different local
+comparisons on a national scale: all we would have would be a series
+of regional orderings of MPs with no overlap. We then keep all
+comparisons between local MPs, no comparisons between Sunak and
+Starmer, and two comparisons involving Sunak and Starmer.
+
+A worked example may help. Consider a respondent councillor in Castle
+Point. The UTLA for Castle Point District Council is Essex County
+Council. Essex County council includes sixteen Westminster
+constituencies.[^southend] With two anchor MPs added, there are 153
+pairwise combinations of MPs ignoring the order of presentation. Of
+these, 120 are comparisons between Essex MPs; one is a comparison
+between Sunak and Starmer, and thirty-two are comparisons involving
+Sunak and Starmer. We keep all 120 comparisons between Essex MPs and
+two comparisons involving Sunak and Starmer. Of these 122 comparisons,
+we randomly show respondents six comparisons. 
+
+[^southend]: Southend-on-Sea and Thurrock, as unitary authorities, are
+    their own UTLAs.
+
+```{r}
+svy <- dat <- readRDS(file = here::here("working",
+                                 "combined_data.rds"))
+n_w1 <- sum(dat$wave == 1)
+n_w2 <- sum(dat$wave == 2)
+```
+
+Respondents to the first wave of the survey expressed `r n_w1`
+pairwise comparisons between MPs, excluding don't know
+responses. Respondents to the second wave expressed `r n_w2` pairwise
+comparisons excluding don't know responses. The number of pairwise
+comparisons in the second wave is larger because respondents were
+presented with six comparisons on each dimension, and because in the
+second wave we grouped some UTLAs together. 
+
+```{r}
+#| label: tbl-dvw1
+#| tbl-cap: Response distribution in the first wave, asking about economic issues. Order of responses is reversed from how it appeared in the original survey.
+
+tab_1_df <- dat |>
+    filter(wave == 1) |>
+    count(dv) |>
+    mutate(Response = dplyr::recode(dv,
+                                    "5" = "[First named MP] is much more left-wing",
+                                    "4" = "[First named MP] is somewhat more left-wing",
+                                    "3" = "[First named MP] and [second named MP] are about the same",
+                                    "2" = "[Second named MP] is somewhat more left-wing",
+                                    "1" = "[Second named MP] is much more left-wing")) |>
+    dplyr::select(Response, Y = dv, n)
+
+kable(tab_1_df)
+```
+
+
+```{r}
+#| label: tbl-econdvw2
+#| tbl-cap: Response distribution in the second wave, asking about economic issues
+
+tab_2_df <- dat |>
+    filter(wave == 2) |>
+    filter(dim == "econ") |>
+    count(dv) |>
+    mutate(Response = dplyr::recode(dv,
+                                    "1" = "[First named MP] is much more economically conservative",
+                                    "2" = "[First named MP] is somewhat more economically conservative",
+                                    "3" = "[First named MP] and [second named MP] are about the same",
+                                    "4" = "[Second named MP] is somewhat more economically conservative",
+                                    "5" = "[Second named MP] is much more economically conservative")) |>
+    dplyr::select(Response, Y = dv, n)
+
+kable(tab_2_df)
+```
+
+```{r}
+#| label: tbl-cultdvw2
+#| tbl-cap: Response distribution in the second wave, asking about cultural issues
+
+tab_3_df <- dat |>
+    filter(wave == 2) |>
+    filter(dim == "cult") |>
+    count(dv) |>
+    mutate(Response = dplyr::recode(dv,
+                                    "1" = "[First named MP] is much more culturally conservative",
+                                    "2" = "[First named MP] is somewhat more culturally conservative",
+                                    "3" = "[First named MP] and [second named MP] are about the same",
+                                    "4" = "[Second named MP] is somewhat more culturally conservative",
+                                    "5" = "[Second named MP] is much more culturally conservative")) |>
+    dplyr::select(Response, Y = dv, n)
+
+kable(tab_3_df)
+```
+
+
+The distribution of responses is shown in @tbl-dvw1, @tbl-econdvw2 and
+@tbl-cultdvw2. The order of responses in @tbl-dvw1 has been reversed
+because wave 1 asked respondents to identify the more left-wing MP and
+wave 2 asked respondents to identify the more (economically or
+socially) conservative. The modal response is that the MPs being
+compared are roughly the same, and extreme responses ("much more") are
+always less commmon than less extreme responses ("somewhat
+more"). There is some evidence in the second wave for an order effect,
+such that MPs who are listed second in the comparison are more likely
+to be picked than the first-listed MP in the comparison.
+
+<!-- response rate; don't knows -->
+
+<!-- distribution of responses -->
+
+<!-- distribution of responses across MPs -->
+
+```{r}
+uniq_mps <- unique(c(dat$wikidata.A,
+                      dat$wikidata.B))
+n_mps <- length(uniq_mps)
+
+ni_seats <- c("Belfast East", "Belfast North",
+              "Belfast South and Mid Down",
+              "Belfast West",
+              "East Antrim",
+              "East Londonderry",
+              "Fermanagh and South Tyrone",
+              "Foyle",
+              "Lagan Valley",
+              "Mid Ulster",
+              "Newry and Armagh",
+              "North Antrim",
+              "North Down",
+              "South Antrim",
+              "South Down",
+              "Strangford",
+              "Upper Bann",
+              "West Tyrone")
+
+all_w1 <- read.csv(here::here("data",
+                              "all_wave1_mps_per_wikidata.csv"))
+
+all_w1 <- all_w1 |>
+    filter(!is.element(constituencyLabel, ni_seats))
+
+w1_missing <- setdiff(all_w1$item, uniq_mps)
+
+n_w1_misses <- length(w1_missing)
+
+all_w2 <- read.csv(here::here("data",
+                              "all_wave2_mps_per_wikidata.csv"))
+
+all_w2 <- all_w2 |>
+    filter(!is.element(constituencyLabel, ni_seats))
+
+w2_missing <- setdiff(all_w2$item, uniq_mps)
+
+n_w2_misses <- length(w2_missing)
+
+n_keir <- sum(c(dat$wikidata.A,
+                dat$wikidata.B) == "http://www.wikidata.org/entity/Q6383803")
+
+n_rishi <- sum(c(dat$wikidata.A,
+                 dat$wikidata.B) == "http://www.wikidata.org/entity/Q20055561")
+
+med_appear <- median(table(c(dat$wikidata.A, dat$wikidata.B)))
+
+```
+
+In total respondents expressed opinions about 953 MPs. There were 
+`r n_w1_misses` British MPs who were in office at the time of the first
+wave who are not featured in this data. There are `r n_w2_misses` MPs
+who were in office at the time of the second wave who are not featured
+in this data. MPs may not feature in the data because they were not
+asked about or because no respondents gave usable responses. MPs who
+are not featured in the data do not have any estimated position.
+
+Considering just the MPs who are featured in the data, some MPs
+feature much more than others. This is particularly true for the two
+anchor MPs, Sir Keir Starmer and Rishi Sunak, who appear `r n_keir`
+and `r n_rishi` times respectively. The average (median) MP features
+in the data `r med_appear` times.
+
+
+# Description of the model
+
+In this section we describe the model that we use to connect
+councillors' responses to MP positions. As a reminder: councillor's
+responses are an ordinal variable with values 1 to 5, where a value of
+5 corresponds to a judgement that the second-named MP is much more
+(economically or culturally) conservative than the first-named MP, and
+a value of 1 corresponds to a judgement that the *first-named* MP is
+much more (economically or culturally) conservative than the
+second-named MP. Responses from the first-wave, which asked about the
+more left-wing MP, have been flipped so that they match responses from
+the second wave. We "explain" these ordinal responses through a latent
+continuous variable, which is turned into an ordinal variable through
+a series of cutpoints. We use $\mu_i$ to refer to the latent
+continuous variable, where the subscript $i$ runs from one to 13680
+(the total number of judgements made by councillors). We use
+$\symbf{\tau}$ to refer to the cutpoints. Because there are five
+response categories, there are four (five minus one) cutpoints between
+these categories.
+
+We connect the ordinal response to the latent continuous variable by
+using a cumulative logit link model. A cumulative link model models
+the probability that the response will fall in category $k$ or lower:
+
+$$
+Pr(Y_i \le k) = F(\tau_{k - 1} - \mu_i)
+$$
+
+where $F()$ is some function which takes in the difference between the
+cutpoint and the latent parameter (which can be any real number,
+positive or negative), and returns a probability between zero and
+one. We use the cumulative distribution function for the logistic
+distribution, which makes our model a cumulative logit link model. The
+use of a logit link rather than (say) a probit link does not affect
+our estimates except for changing the scale of the estimates. 
+
+In a cumulative link model, the cutpoints $\symbf{\tau}$ can either be
+flexible or structured. We use structured cutpoints. Specifically, we
+ensure that the cutpoints are symmetric, such that the distance
+between cutpoints one and two is the same as the distance between
+cutpoints three and four. We use symmetric thresholds because of the
+symmetry in our question format: whether an MP appears as the
+first-named or second-named MP is random, and so the distance between
+"much more" and "somewhat more" should not be different depending on
+whether we face the actual comparison, or the same comparison but with
+the order reversed. Formally, we set
+
+$$
+\begin{aligned}
+\symbf{\tau} = [ & \tau^*_1,  \\
+& \tau^*_1 + \delta_1, \\
+& \tau^*_1 + \delta_1 + \delta_2, \\
+& \tau^*_1 + 2 \cdot \delta_1 + \delta_2 
+]
+\end{aligned}
+$$
+
+where $\delta_1$ and $\delta_2$ are different increments or
+"spacers". Using spacers in this way is not the only way of ensuring
+symmetry [@christensen2019clm], but we find it is the easiest way. A
+visual representation of this setup is given in @fig-thresh, which
+shows the thresholds and the increments used.
+
+
+```{r, fig = TRUE, dpi = 300}
+#| fig-width: 9
+#| fig-height: 4
+#| label: fig-thresh
+#| fig-cap: "Illustration of the symmetric thresholds used"
+thresh0 <- -1
+delta1 <- 1/2
+delta2 <- 1
+thresh <- c(thresh0,
+            thresh0 + delta1,
+            thresh0 + delta1 + delta2,
+            thresh0 + delta1 + delta2 + delta1)
+
+### Create the graph area
+par(mar = c(4, 2, 2, 2))
+plot(x = c(-3, 3),
+     y = c(0, 0.65),
+     type = "n",
+     xlab = expression("Linear predictor"~mu),
+     ylab = "",
+     axes = FALSE)
+axis(1)
+
+### Add the curve
+curve(dnorm, from = -3, to = 3, lwd = 2, add = TRUE)
+### Add the thresholds: lines from 0 to 0.4
+ytop <- 0.4
+for (i in 1:4) {
+    lines(x = c(thresh[i], thresh[i]),
+          y = c(0, 0.4))
+}
+text(x = thresh[1], y = 0.4, expression(tau[1]), pos = 3)
+text(x = thresh[2], y = 0.4, expression(tau[2]), pos = 3)
+text(x = thresh[3], y = 0.4, expression(tau[3]), pos = 3)
+text(x = thresh[4], y = 0.4, expression(tau[4]), pos = 3)
+
+### Add on the DV descriptors at the top
+ytop <- 0.625
+
+text(x = -1.5, y = ytop, "Y = 1")
+### Interiors
+text(x = mean(thresh[1:2]), y = ytop, "Y = 2")
+text(x = mean(thresh[2:3]), y = ytop, "Y = 3")
+text(x = mean(thresh[3:4]), y = ytop, "Y = 4")
+###
+text(x = 1.5, y = ytop, "Y = 5")
+
+### Add on the DV text
+ytop <- 0.6
+
+text(x = -1.5, y = ytop, "[First named]\nmuch more\nl-w", cex = 0.8, adj = c(0.5, 1))
+### Interiors
+text(x = mean(thresh[1:2]), y = ytop,
+     "...somewhat\nmore l-w...",
+     cex = 0.8, adj = c(0.5, 1))
+text(x = mean(thresh[2:3]), y = ytop,
+     "...about the\nsame...",
+     cex = 0.8, adj = c(0.5, 1))
+text(x = mean(thresh[3:4]),
+     y = ytop, "[First-named]\nsomewhat more\nr-w",
+     cex = 0.8, adj = c(0.5, 1))
+###
+text(x = 1.5, y = ytop, "... much\nmore r-w", cex = 0.8, adj = c(0.5, 1))
+
+### Add on the symmetric distances
+ymid <- 0.15
+arr_length <- unit(0.15, "inches")
+arrows(x0 = thresh[1], y0 = ymid, x1 = thresh[2], y1 = ymid, code = 3, length = arr_length)
+arrows(x0 = thresh[2], y0 = ymid + 0.05, x1 = thresh[3], y1 = ymid + 0.05, code = 3, length = arr_length)
+arrows(x0 = thresh[3], y0 = ymid, x1 = thresh[4], y1 = ymid, code = 3, length = arr_length)
+
+### Add the text above
+text(x = mean(thresh[1:2]), y = ymid + 0.025, expression(delta[1]))
+text(x = mean(thresh[2:3]), y = ymid + 0.075, expression(delta[2]))
+text(x = mean(thresh[3:4]), y = ymid + 0.025, expression(delta[1]))
+
+```
+
+
+The thresholds explain how we can connect the ordered responses given
+by councillors to something continuous, but they do not explain where
+that continuous variable $\mu$ comes from. We set up $\mu$ so that it
+is equal to the difference between the latent positions of the two MPs
+being compared. We use $\theta$ to refer to the latent position of
+each MP. Referring to $\theta$ is complicated because
+the positions of MPs can be positions of (i) different MPs; (ii) at
+different times; (iii) on different dimensions. Additionally,
+referring to $\theta$ is complicated because we sometimes wish to the
+position of an MP by their index -- for example, the position of MP
+number fifty on our list of MPs -- and sometimes by their role in a
+comparison -- for example, as the MP listed as the first-named MP on
+question forty. Bearing this in mind, we use subscripts and
+superscripts so that $\theta^{Econ.}_{j, t}$ refers to the position of
+MP $j$ on the economic dimension at time $t$. The subscript $j$ runs
+from 1 to 953 (the number of MPs in our combined data); the subscript
+$t$ is either 1 (referring to the survey conducted in autum of 2023)
+or 2 (referring to the survey conducted in the autumn of 2024). When
+we write $\theta^{Cult.}_{A[i], t}$, we refer to the position on the
+cultural dimension of the first-named MP in question $i$; when we
+write $\theta^{Econ.}_{B[i], t}$ we refer to the position on the
+economic dimension of the second-named MP in question $i$.
+
+With this notation, we can then say that
+
+\doublespacing
+
+$$
+\mu_i = \left\{ 
+  \begin{array}{ c l }
+    \theta^{Econ.}_{B[i], t} - \theta^{Econ.}_{A[i], t} & \quad \textrm{if question was about economics} \\
+    \theta^{Cult.}_{B[i], t} - \theta^{Cult.}_{A[i], t} & \quad \textrm{otherwise}
+  \end{array}
+\right.
+$$
+
+\singlespacing
+
+In one sense, this completes the connection between the responses
+given by councillors and the positions of the MPs on the two
+dimensions: we have specified a model which ends in positions of
+different MP on two dimensions at different times. However, this is
+not the end of the model specification. Just as with the cutpoints, we
+chose to introduce certain elements of structure so that the model
+makes sense. We chose to capture three types of structure: temporal,
+issue, and party. 
+
+Consider time first. Even considering just the economic dimension,
+we've posited two values of $\theta$ for each MP -- one value in the
+first wave, one value in the second wave. It's very likely that these
+two values are close together -- that the distance between the same MP
+a year apart is much less than the distance between two MPs chosen at
+random but "measured" in the same year. We can model this by making
+the MP's position at time two equal to their position at time one,
+plus a small shift -- or equivalently, we can take the most recent
+position as the baseline, and make positions at previous points in
+time equal to their most recent position, minus a small
+shift. Formally,
+
+$$
+\theta^{Econ.}_{j, 1} = \theta^{Econ.}_{j, 2} + \nu_j
+$$
+
+and
+
+$$
+\theta^{Cult.}_{j, 1} = \theta^{Cult.}_{j, 2} + \nu_j
+$$
+
+where these small shifts are in turn modelled as coming from a common
+distribution with a specified standard deviation. 
+
+$$
+\nu \sim N(0, 0.1)
+$$
+
+By imposing the assumption that the small shifts come from a common
+distribution we are able to move back and forth between how large
+shifts are on average and how large a shift might be in any particular
+case. 
+
+Now consider party. Just as an MP's position in 2024 is likely to
+resemble their position in 2023, so too will the position of a Labour
+MP resemble that of another Labour MP much more than it does a
+Conservative MP. Although we use the Labour and Conservative parties as
+examples here, this applies to any party (or group of MPs who can be
+treated as though they were a party). We therefore model each MPs'
+overall position as a function of a party-specific component, and a
+component which is specific to them. That is,
+
+\doublespacing
+$$
+\theta^{Econ.}_j = \alpha^{Econ.}_j + \gamma^{Econ.}_{P[j]}
+$$
+
+$$
+\theta^{Cult.}_j = \alpha^{Cult.}_j + \gamma^{Cult.}_{P[j]}
+$$
+
+\singlespacing
+
+where $P[j]$ gives the party of legislator $j$, and $\gamma$ refers to
+a set of party-specific fixed effects relative to the reference party,
+the Conservatives.
+
+Finally, consider associations between the different dimensions. It is
+logically possible that each MPs' position on the economic dimension
+tells us nothing about their position about their position on the
+cultural dimension -- that a free-marketeer is as likely to be a
+social libertarian as they are to be a moralizer. At the same time,
+there is lots of evidence to suggest that Western European elites (a
+category which necessarily includes members of national legislatures)
+are very good at subsuming economic and cultural issues under a single
+rubric which has to do with equality. Positions on these two
+dimensions may therefore be correlated to a greater or lesser
+degree. We can incorporate this into the model by having the
+idiosyncratic legislator effects be drawn from a multivariate normal
+distribution with an estimated covariance matrix. Formally,
+
+$$
+\begin{bmatrix}
+\alpha^{Econ.} \\
+\alpha^{Cult.}
+\end{bmatrix} \sim
+N\left(
+\begin{bmatrix}
+0 \\
+0 
+\end{bmatrix},
+\begin{bmatrix}
+\sigma_{Econ.} & \sigma_r \\
+\sigma_r & \sigma_{Cult.}
+\end{bmatrix}
+\right)
+$$
+
+The parameters in the model are therefore of three types. There are
+parameters of primary interest: the positions of MPs on each dimension
+at each time. These are in turn built on parameters of secondary
+interest, like the party-specific effects and the legislator-specific
+effects on each dimension. Finally, there are ancillary parameters,
+like the increments over time, and the variances and covariances. The
+model is therefore complicated, but it is only as complicated as it
+needs to be to model data asking about two dimensions at two different
+points in time.
+
+It would in principle be possible to incorporate other elements into
+the model in the same way that party has been incorporated into the
+model. Constituency-specific features like the share of the
+Conservative vote might be included on the basis that Conservative MPs
+from an area where the Conservatives are generally popular are more
+likely to be right-wing than Conservative MPs who just eked out a
+win. However, including these additional covariates raises further
+questions (should we expect the Conservative share of the vote to work
+in the same way across different elections?) and complicates attempts
+to relate MP positions to characteristics of their area (how can we
+assess the strength between voting behaviour in the area and MP
+positions when voting behaviour in the area is used to construct the
+measure of MP positions?). 
+
+## Identifiability and scale
+
+Ordinal logit models can suffer from problems of identifiability when
+the continuous predictor $\mu$ is modelled as the difference of two
+latent variables, in the sense that different sets of parameter values
+can give the same fit to the data. These identifiability issues can be
+broken down into issues of scale and location. Problems of scale arise
+because we can multiply the latent variables by a constant and divide
+the cut-off parameter by that constant, leaving the fit to the data
+unchanged. Problems of location arise because we can add on a constant
+to all latent variables, leaving the fit to the data unchanged. This
+is because the linear predictor depends on the difference between the
+latent variables rather than their absolute values. 
+
+The issue of scale is dealt with by placing a prior on the first
+threshold centred on -2, so that it would no longer be possible to
+multiply the latent parameters by some constant and offset that change
+by altering the cut-off parameters. The issue of location is dealt
+with by the use of the prior on the legislator-specific component of
+legislator's ideal points. This prior is centred on zero, and so
+solutions would involve adding large positive or negative constants to
+the ideal points are penalized.
+
+Although the scale is set by the model (in the sense that the first
+cut-off is drawn from a distribution centred on -2 and priors are
+placed on the distribution of MP ideal points), this scale is not
+intuitive. In this note, we therefore scale MP positions by
+subtracting the minimum, dividing by the maximum, and multiplying
+by 100. This places the positions on a 0-100 scale. Because the
+minimum and maximum are properties of the sample we collected,
+estimates which are transformed in this way will not be comparable
+across different and separately modelled surveys. Researchers should
+not therefore interpret these positions as though they were absolute
+measurements, or imply that a score of 25, or 50, or 75, means that an
+MP is "left-wing", "centrist", or "right-wing".
+
+
+## Prior specification
+
+We place prior distributions on some of these parameters and set some
+parameters as fixed. We do this to solve the problems of scale and
+location noted above. Specifically, we adopt the following priors for
+the cutpoints
+
+$$
+\tau_1 \sim N(-2, 0.5)
+$$
+
+$$
+\delta_1 \sim N^+(0, \sqrt{3})
+$$
+
+$$
+\delta_2 \sim N^+(0, \sqrt{3})
+$$
+
+where $N^+$ indicates a truncated, or half-normal distribution which
+only generates positive values. 
+
+We draw party effects from the following common distribution:
+
+$$
+\gamma \sim N(0, 4.0)
+$$
+
+The most complex priors are the priors placed on the covariance
+between legislator specific ideal points. We decompose this covariance
+matrix into the product of a scale vector S and a correlation matrix
+R, where the prior on the correlation matrix R involves the
+Lewandowski-Kurowicka-Joe distribution [@lewandowski2009generating].
+
+$$
+\begin{bmatrix} \sigma_{Econ.} & \sigma_r \\ \sigma_r &
+\sigma_{Cult.}  \end{bmatrix} \equiv \operatorname{diag}(S) \cdot R \cdot \operatorname{diag}(S) 
+$$
+
+$$
+S \equiv
+\begin{bmatrix}
+\varsigma_{Econ.}, \varsigma_{Cult.}
+\end{bmatrix}
+$$
+
+$$
+\varsigma \sim N^{+}(0, 2);
+$$
+
+$$
+R \sim LJKCorr(4)
+$$
+
+A full justification of these priors is given in the appendix.
+
+
+## Estimation
+
+The model was estimated in `rstan`, the R interface to the Stan
+programming language [@rstan; ]. The model was set to run for 2,000 iterations,
+of which 1,000 iterations were discarded as warm-up
+iterations. Convergence across the four chains, as measured by the
+R-hat statistic, was acceptable. 
+
+# Results
+
+In this section we describe the results of the analysis, focusing exclusively on the positions of MPs, rather than any of the secondary and auxiliary parameters in the model. We make seven broad points regarding these positions.
+
+*First,* the left-right ordering of parties (according to the average
+position of MPs in that party on the economic dimension) makes
+sense. @fig-bees shows a beeswarm plot of MP's left-right position on
+the economic dimension for MPs elected in the 2024 - parliament. Each
+plotted point corresponds to the posterior mean. Values have been
+rescaled so that the maximum value across all MPs and iterations is
+100, and so that the minimum value is zero. Parties are ordered by
+their average (mean) position on this dimension. MPs from Reform UK
+are thus the most right-wing party, and the Greens the most left-wing
+party. This matches the rank ordering of parties in the 2024 British
+Election Study Expert Survey, *except that* the expert survey places
+Plaid Cymru to the left of the Scottish National Party, whilst these
+estimates place the SNP to the left. 
+
+@fig-bees is valuable not just because it shows the relative order of
+parties, but also relative dispersion of the MPs in that party. When
+judged by the *range* of MPs positions, the Labour party is the most
+variable; when judged by the *standard deviation* of positions, it is
+the Conservative party which is most variable. Another way of saying
+the same thing is to note that whilst the Labour party has some
+outlying MPs to the extreme left and to the centre, many of its MPs
+are clustered around the average within the party.
+
+
+
+```{r}
+#| fig-width: 9
+#| fig-height: 6
+#| label: fig-bees
+#| fig-cap: "Bee-swarm plot of MPs' left-right positions on the economic dimension for MPs elected in 2024. "
+
+dat <- read.csv(here::here("outputs",
+                           "summary_statistics_file.csv"))
+
+plot_df <- dat |>
+    filter(!is.na(Party.24)) |>
+    filter(Party.24 != "Spk") |>
+    filter(Party.24 != "Ind") |>
+    mutate(Party = factor(Party.24, ordered = TRUE),
+           Party = reorder(Party, econ_mean)) 
+
+### Get count within party to use for alpha
+plot_df <- plot_df |>
+    group_by(Party) |>
+    mutate(n_members = n())
+
+ggplot(plot_df, aes(x = Party, y = econ_mean)) +
+    geom_beeswarm(aes(fill = Party, colour = Party, shape = Party,
+                      alpha = 1 / n_members),
+                  size = 3,
+                  cex = 1) +
+    scale_x_discrete("Party", labels = function(x) str_wrap(x, width = 10)) +
+    scale_y_continuous("Estimated left-right position on the economic dimension") +
+    scale_shape_manual("Party",
+                      values = c("Con" = 21,
+                                 "Lab" = 22,
+                                 "LD" = 23,
+                                 "SNP" = 24,
+                                 "PC" = 25,
+                                 "Green" = 21,
+                                 "RUK" = 22)) +
+    scale_alpha_continuous(guide = "none",
+                           range = c(1/3, 1)) + 
+    scale_fill_manual("Party",
+                  values = c("Con" = "#0087DC",
+                             "Lab" = "#E4003B",
+                             "LD" = "#FAA61A",
+                             "SNP" = "#FDF38E",
+                             "PC" = "#005B54",
+                             "Green" = "#528D6B",
+                             "RUK" = "#12B6CF")) +
+    scale_colour_manual("Party",
+                      values = c("Con" = "darkgrey",
+                                 "Lab" = "darkgrey",
+                                 "LD" = "black",
+                                 "SNP" = "black",
+                                 "PC" = "darkgrey",
+                                 "Green" = "darkgrey",
+                                 "RUK" = "black"
+                                 )) +
+    coord_flip() + 
+    theme_bw(base_size = 12) +
+    theme(legend.position = "bottom")
+
+```
+
+
+*Second,* individuals at the extremes of the recovered distribution
+are all individuals who we would, on the basis of other evidence,
+describe as being at the extreme ends of their party.[^extremes]
+Whilst @fig-bees is helpful in understand averages, we can gain a
+better understanding of these positions by considering individuals MPs
+are the left, middle, and right of the distribution. @tbl-extremes
+shows eighteen MPs divided equally between these three categories. For
+each MP we show their average position (column labelled "Mean" under
+"Position"), the 5th and 95th percentiles of the distribution (columns
+marked "Lo" and "Hi" under "Position"). We also show equivalent
+figures for the *rank* of the MP, where a rank of 1 means that the MP
+is the most left-wing and a rank of 614 means that the MP is the most
+right-wing of the MPs to feature in the data.
+
+[^extremes]: Once again, it is important to note that "extreme" as
+    used here just means "extreme relative to the other MPs asked
+    about in the survey", and does not imply extremism in an absolute
+    sense.
+
+```{r}
+#| label: tbl-extremes
+#| tbl-cap: MPs on the left, middle, and right of the recovered dimension. Columns Lo and Hi refer to the 2.5th and 97.5th percentiles of the posterior distribution. 
+plot_df <- read_csv(here::here("outputs",
+                                 "mpsleftright_full.csv.gz"))
+
+plot_df <- plot_df |>
+    filter(dimension == 1) |>
+    filter(!is.na(PCON24NM)) |>
+    group_by(iter) |>
+    arrange(value) |>
+    mutate(econ_rank = 1:n()) |>
+    ungroup() |>
+    group_by(wikidata, DisplayName, Party.24, PCON24NM) |>
+    summarize(econ_mean = mean(value.sc),
+              econ_lo = quantile(value.sc, 0.05),
+              econ_hi = quantile(value.sc, 1 - 0.05),
+              actual_rank = round(mean(econ_rank)),
+              lo_rank = quantile(econ_rank, 0.05),
+              hi_rank = quantile(econ_rank, 1 - 0.05),
+              .groups = "drop")
+
+tab_top <- plot_df |>
+    arrange(econ_mean) |>
+    head()
+tab_bottom <- plot_df |>
+    arrange(desc(econ_mean)) |>
+    head() |>
+    arrange(econ_mean)
+tab_middle <- plot_df |>
+    arrange(econ_mean) |>
+    slice(305:310)
+
+tab <- bind_rows(tab_top, tab_middle, tab_bottom) |>
+    mutate(DisplayName = sub(" and ", " & ", DisplayName)) |>
+    mutate(DisplayName = sub(" \\(.*", "", DisplayName)) |>
+    dplyr::select(MP = DisplayName, Party = Party.24,
+                  `Mean` = econ_mean, `Lo` = `econ_lo`, `Hi` = `econ_hi`,
+                  `Rank` = actual_rank, `Lo ` = `lo_rank`, `Hi ` = `hi_rank`)
+
+kbl(tab,
+    digits = 1,
+    booktabs = TRUE) |>
+    add_header_above(c(" " = 2, "Position" = 3, "Rank" = 3)) |>
+    pack_rows(index = c("Left-wing" = 6, "Middle" = 6, "Right-wing" = 6))
+
+```
+
+The MPs with the furthest left positions are a mix of female MPs from
+ethnic minorities and older white men. Nadia Whittome, Bell
+Ribeirro-Addy and Diane Abbott all have some possibility of being *the*
+most left-wing MP, and we can be confident that they are amongst the
+top twenty most left-wing. Ian Byrne, John McDonnell and Jon Trickett
+are slightly further to the right, and in their case we could only
+confidently say that they were amongst the thirty most left-wing MPs. 
+
+The rank order of these MPs seems *prima facie* plausible. All are
+members of the Socialist Campaign Group. Ian Byrne, whilst elected as
+a Labour MP, currently sits as an independent, having had the whip
+withdrawn after voting to end child benefit caps.
+
+We can be reasonably confident that the individuals at the top of
+@tbl-extremes are to the left of the 2024- parliament, but we cannot
+be so confident about the individuals shown in the middle of
+@tbl-extremes. These are individuals who are close to the middle of
+the distribution within the Parliament, but who, given the scale of
+Labour's victory, need not be "centrist" as that term is commonly
+understood. The degree of uncertainty for these individuals is
+considerable. If we take the newly elected MP for Harlow Chris Vince
+as an example -- we can rule out his being amongst the 100 most
+left-wing MPs, but can't rule out his being amongst the most
+right-wing Labour MPs. 
+
+Some degree of certainty returns when we look at individuals furthest
+to the right -- two MPs from Reform UK, and four conservatives. Four
+of these MPs -- Farage, Lowe, Duncan Smith and Braverman -- have a
+non-zero probability of being the most right-wing of MPs to feature in
+this data; the other two are not far behind. The positioning of Reform
+UK MPs is not surprising, and Braverman has been discussed as a
+potential detection to Reform UK following her husband's defection
+(which took place after the survey closed, and could therefore not
+have affected respondents' evaluation of Braverman).
+
+
+```{r}
+#| fig-width: 9
+#| fig-height: 6
+#| label: fig-spcult
+#| fig-cap: "Scatter plot of MPs' left-right positions on the economic dimension against position on the cultural dimension, for MPs elected in 2024. "
+
+plot_df <- dat |>
+    mutate(Party = ifelse(is.na(Party.24), Party.22, Party.24),
+           Party = dplyr::recode(Party,
+                                 "Conservative" = "Con",
+                                 "Labour" = "Lab",
+                                 "Plaid Cymru" = "PC",
+                                 "Scottish National Party" = "SNP")) |>
+    filter(Party != "Spk") |>
+    filter(Party != "Ind") |>
+    mutate(Party = factor(Party, ordered = TRUE),
+           Party = reorder(Party, econ_mean))
+
+
+ggplot(plot_df,
+       aes(x = econ_mean, y = cult_mean)) +
+    geom_point(aes(fill = Party, colour = Party, shape = Party),
+               size = 3,
+               alpha = 1/2) +
+    scale_x_continuous("Estimated left-right position on the economic dimension") +
+    scale_y_continuous("Estimated left-right position on the cultural dimension") +
+    scale_shape_manual("Party",
+                      values = c("Con" = 21,
+                                 "Lab" = 22,
+                                 "LD" = 23,
+                                 "SNP" = 24,
+                                 "PC" = 25,
+                                 "Green" = 21,
+                                 "RUK" = 22)) +
+    scale_fill_manual("Party",
+                  values = c("Con" = "#0087DC",
+                             "Lab" = "#E4003B",
+                             "LD" = "#FAA61A",
+                             "SNP" = "#FDF38E",
+                             "PC" = "#005B54",
+                             "Green" = "#528D6B",
+                             "RUK" = "#12B6CF")) +
+    scale_colour_manual("Party",
+                      values = c("Con" = "darkgrey",
+                                 "Lab" = "darkgrey",
+                                 "LD" = "black",
+                                 "SNP" = "black",
+                                 "PC" = "darkgrey",
+                                 "Green" = "darkgrey",
+                                 "RUK" = "black"
+                                 )) +
+    geom_smooth(method = "lm", se = FALSE) +
+    theme_bw(base_size = 12) +
+    theme(legend.position = "bottom")
+
+dims_correl <- cor(plot_df$econ_mean, plot_df$cult_mean)
+dims_correl <- round(dims_correl, 3)
+```
+
+
+
+```{r}
+#| label: tbl-caucus
+#| tbl-cap: Average positions and standard deviations of MPs in different party caucuses, 2019 to 2024 parliament. 
+
+old <- read.csv(here::here("data",
+                           "previous_exercise_with_wikidata_idents.csv"))
+plot_df <- left_join(dat,
+                     old,
+                     by = join_by(wikidata))
+
+cons_grp <- plot_df |>
+    filter(Party.22 == "Conservative") |>
+    summarize(nobs = n(), medianval = median(econ_mean), sdval = sd(econ_mean)) |>
+    mutate(Group = "(All Conservative MPs)")
+
+cons_onenation <- plot_df |>
+    filter(Party.22 == "Conservative") |>
+    filter(OneNation == 1) |>
+    summarize(nobs = n(), medianval = median(econ_mean), sdval = sd(econ_mean)) |>
+    mutate(Group = "One Nation members")
+
+
+cons_trg <- plot_df |>
+    filter(Party.22 == "Conservative") |>
+    filter(TRG_Patron == 1) |>
+    summarize(nobs = n(), medianval = median(econ_mean), sdval = sd(econ_mean)) |>
+    mutate(Group = "Tory Reform Group")
+
+cons_erg <- plot_df |>
+    filter(Party.22 == "Conservative") |>
+    filter(ERG_Subscriber == 1) |>
+    summarize(nobs = n(), medianval = median(econ_mean), sdval = sd(econ_mean)) |>
+    mutate(Group = "ERG subscribers")
+
+
+cons_grp <- bind_rows(list(cons_grp, cons_onenation, cons_trg, cons_erg)) |>
+    arrange(desc(medianval)) |>
+    mutate(Party.22 = "Conservative") |>
+    dplyr::select(Group, `N` = nobs, `Median` = medianval, `SD` = sdval)
+
+
+###
+lab_grp <- plot_df |>
+    filter(Party.22 == "Labour") |>
+    summarize(nobs = n(), medianval = median(econ_mean), sdval = sd(econ_mean)) |>
+    mutate(Group = "(All Labour MPs)")
+
+lab_scg <- plot_df |>
+    filter(Party.22 == "Labour") |>
+    filter(SocialistCampaignGroup == 1) |>
+    summarize(nobs = n(), medianval = median(econ_mean), sdval = sd(econ_mean)) |>
+    mutate(Group = "Socialist Campaign Group")
+
+
+lab_trib <- plot_df |>
+    filter(Party.22 == "Labour") |>
+    filter(TribuneGroup == 1) |>
+    summarize(nobs = n(), medianval = median(econ_mean), sdval = sd(econ_mean)) |>
+    mutate(Group = "Tribune Group")
+
+lab_grp <- bind_rows(list(lab_grp, lab_scg, lab_trib)) |>
+    arrange(desc(medianval)) |>
+    mutate(Party.22 = "Labour") |>
+    dplyr::select(Group, `N` = nobs, `Median` = medianval, `SD` = sdval)
+
+
+require(kableExtra)
+tab <- rbind(cons_grp, lab_grp) |> arrange(desc(Median))
+kbl(tab,
+    booktabs = TRUE,
+    digits = 2) |>
+    pack_rows(index = c("Cons." = 4, "Lab." = 3))
+
+```
+
+*Third,* the positions of different factions within the two largest
+parties (according to the MPs who are members of those factions) make
+sense. We have already touched on this in our analysis of the
+furthest-left individuals in the Labour Party, all of whom are members
+of the Socialist Campaign Group. @tbl-caucus shows summary statistics
+for two Labour factions and three Conservative factions, for members
+of the 2019-2024 parliament.[^olddata] For Labour, Socialist Campaign
+Group MPs are to the left of the party generally, and the party
+generally is to the left of Tribune Group MPs. For the Conservatives,
+members of the (partially overlapping) Tory Reform and One Nation
+groupings are to the left of the party generally, and the party
+generally is to the left of European Reform Group subscribers. This
+suggests that the estimates are not just correct at the extremes shown
+in @tbl-extremes, but capture differences between relevant groups of
+MPs.
+
+[^olddata]: We use data on the 2019 to 2024 parliament rather than the
+    2024 - parliament because new members may still be establishing
+    their membership of different party factions, and because there
+    are now many fewer surviving members of the Tory Reform Group or
+    One Nation. 
+
+*Fourth,* MPs' positions on the economic dimension are almost identical
+to their positions on the cultural dimension. @fig-bees and
+@tbl-extremes both showed MPs' positions on the *economic* left-right
+dimension. Had they instead showed positions on the cultural
+left-right dimension, they would not have been very
+different. @fig-spcult shows the relationship between MPs' positions
+on the economic left-right dimension (horizontal axis) against their
+positions on the social and cultural dimension (vertical axis). There
+is a very strong relationship between positions on the two dimensions
+($r=$ `r dims_correl`). This suggests that MPs' positions on these
+two dimensions cannot be distinguished by knowledgeable observers like
+councillors. To the extent that there are differences between
+positions on these two dimensions, these differences are the result of
+party-specific rather than individual-specific differences. Thus,
+(most) Reform UK MPs are above and to the left of (most) Conservative
+party MPs, indicating that Reform UK MPs are more right-wing on
+cultural issues than they are on economic issues. Conversely, Liberal
+Democrats are to the bottom and to the right of most Labour MPs,
+suggesting that the Liberal Democrats are more right-wing on economic
+issues than they are on cultural issues -- or equivalently, more
+left-wing on cultural issues than they are on economic issues. The
+relative positions of Reform UK and the Liberal Democrats make sense
+given the stated ideologies of those parties; it is somewhat harder to
+work out why SNP MPs should be judged more socially conservative than
+most Labour MPs.
+
+
+*Fifth,* MPs' positions in 2024 are almost identical to their
+positions in 2023. When modelling responses we allowed MP positions to
+be correlated across dimensions and connected across waves of the
+survey. Having just shown that MPs' positions are near identical
+across dimensions of ideology, it should not be surprising to learn
+that MP positions are near identical when comparing estimates of
+positions in wave 1 and estimates of positions in wave 2. The
+correlation between the two positions is almost perfect: $r=1$ to
+three decimal places. Although it is possible that some MPs may shift
+in position over longer spans of time, there is no evidence of
+shifting over this short period of one year.
+
+```{r, eval = FALSE}
+increments <- readRDS(file = here::here("working", "overtime_comparison.rds"))
+increments <- increments |>
+    group_by(wikidata, party) |>
+    summarize(old_value.sc = mean(old_value.sc),
+              value.sc = mean(value.sc))
+
+
+
+ggplot(increments,
+       aes(x = old_value.sc, y = value.sc)) +
+    geom_point(aes(fill = party, colour = party, shape = party),
+               size = 3,
+               alpha = 1/2) +
+    scale_x_continuous("Estimated left-right position on the economic dimension in 2023") +
+    scale_y_continuous("Estimated left-right position on the cultural dimension in 2024") +
+    scale_shape_manual("Party",
+                      values = c("Con" = 21,
+                                 "Lab" = 22,
+                                 "LD" = 23,
+                                 "SNP" = 24,
+                                 "PC" = 25,
+                                 "Green" = 21,
+                                 "RUK" = 22)) +
+    scale_fill_manual("Party",
+                  values = c("Con" = "#0087DC",
+                             "Lab" = "#E4003B",
+                             "LD" = "#FAA61A",
+                             "SNP" = "#FDF38E",
+                             "PC" = "#005B54",
+                             "Green" = "#528D6B",
+                             "RUK" = "#12B6CF")) +
+    scale_colour_manual("Party",
+                      values = c("Con" = "darkgrey",
+                                 "Lab" = "darkgrey",
+                                 "LD" = "black",
+                                 "SNP" = "black",
+                                 "PC" = "darkgrey",
+                                 "Green" = "darkgrey",
+                                 "RUK" = "black"
+                                 )) +
+    geom_smooth(method = "lm", se = FALSE) +
+    theme_bw(base_size = 12) +
+    theme(legend.position = "bottom")
+
+temporal_correl <- with(increments, cor(old_value.sc, value.sc))
+temporal_correl <- round(temporal_correl, 3)
+```
+
+
+
+
+
+```{r}
+### Read in Conor's estimates
+
+
+twitter <- read.csv(here::here("data",
+                               "mp_follower_ca_model_estimates.csv"))
+dat <- left_join(dat,
+                 twitter,
+                 by = join_by(wikidata))
+
+twitter_correl <- with(dat,
+                       cor(econ_mean, svd.phi_1, use = "pairwise"))
+
+twitter_N <- with(dat, length(which(!is.na(econ_mean) & !is.na(svd.phi_1))))
+### Read in Conor's experts
+experts <- read.csv(here::here("data",
+                               "ideology_scores_expert_survey_aggregated.csv")) |>
+    dplyr::select(wikidata, expert_mean = Mean)
+
+dat <- left_join(dat,
+                 experts,
+                 by = join_by(wikidata))
+
+expert_correl <- with(dat,
+                      cor(econ_mean, expert_mean, use = "pairwise"))
+
+expert_N <- with(dat, length(which(!is.na(econ_mean) & !is.na(expert_mean))))
+### What, for sake of comparison, is the correlation between Conor's estimates and the experts?
+foo <- left_join(twitter, experts, by = "wikidata")
+cf_correl <- with(foo, cor(svd.phi_1, expert_mean, use = "pairwise"))
+
+### Read in old EDM stuff
+edm <- read.csv(here::here("data",
+                           "hlv_lr.csv"))
+
+lu <- read.csv(here::here("data",
+                          "all_postwar_mps_in_twfy_all_wikidata_ids.csv")) |>
+    dplyr::select(parlparseid = person_id,
+                  wikidata = item) |>
+    mutate(wikidata = sub("https", "http", wikidata),
+           wikidata = sub("/wiki/", "/entity/", wikidata, fixed = TRUE))
+
+edm <- left_join(edm,
+                 lu,
+                 by = join_by(parlparseid))
+
+edm <- left_join(edm,
+                 dat,
+                 by = join_by(wikidata))
+
+edm_correl <- with(edm,
+                   cor(econ_mean, MP.position, use = "pairwise"))
+
+edm_N <- with(edm, length(which(!is.na(econ_mean) & !is.na(MP.position))))
+
+twitter_correl <- round(twitter_correl, 3)
+expert_correl <- round(expert_correl, 3)
+cf_correl <- round(cf_correl, 3)
+edm_correl <- round(edm_correl, 3)
+```
+
+*Sixth,* the estimates are strongly associated with other estimates of
+MPs' positions. @gaughan2024estimating estimates the positions of MPs
+in the 2019 to 2024 parliament active on X (formerly Twitter) by
+performing a latent correspondence analysis on their follower
+matrix. The correlation between the estimates here and those estimates
+derived from social media is high ($r=$ `r twitter_correl`, $N=$ 
+`r twitter_N`). The correlation between the estimates here and the expert
+survey used by Gaughan to validate his estimates is also high ($r=$ 
+`r expert_correl`, $N=$ `r expert_N`) and indeed higher than the
+correlation between Gaughan's social media estimates and the expert
+survey ($r=$ `r cf_correl`, $N=$ `r expert_N`).
+
+An earlier set of estimates comes from @hanretty2017dyadic who
+(following @kellermann2012estimating) estimate the positions of
+backbenchers in the 2010-2015 parliament by analysing the early day
+motions they sign. The correlation with these estimates is also
+extremely high ($r=$ `r edm_correl`, $N=$ `r edm_N`). 
+
+There is therefore evidence from other attempts to estimate MPs'
+positions to suggest that the estimates presented here display
+convergent validity. We argue that our estimates are preferable to
+these other estimates because of their greater coverage, and because
+they display a stronger association with expert placements, which are
+as close as we will get to "ground truth".
+
+```{r uncertainty}
+#| fig-width: 9
+#| fig-height: 6
+#| label: fig-uncertainty
+#| fig-cap: "Uncertainty in estimates as a function of the number of comparisons"
+
+plot_df <- dat |>
+    rowwise() |>
+    mutate(features_a = sum(grepl(wikidata, svy$wikidata.A, fixed = TRUE)),
+           features_b = sum(grepl(wikidata, svy$wikidata.B, fixed = TRUE))) |>
+    ungroup() |>
+    mutate(n_comparisons = features_a + features_b,
+           ci_width = econ_hi - econ_lo) |>
+    mutate(type = case_when(is.na(PCON22CD) & !is.na(PCON24CD) ~ "New MP in 2024",
+                            !is.na(PCON22CD) & is.na(PCON24CD) ~ "Left in 2024",
+                            !is.na(PCON22CD) & !is.na(PCON24CD) ~ "Continuing MP"))
+
+
+
+
+loglogmod <- lm(log(ci_width) ~ log(n_comparisons) + type, data = plot_df)
+
+plot_df$residsq <- resid(loglogmod)^2
+library(ggrepel)
+ggplot(plot_df, aes(x = n_comparisons, y = ci_width)) +
+    geom_point(aes(colour = type, shape = type)) +
+    geom_text_repel(data = plot_df |> filter(residsq > .08),
+              aes(label = DisplayName),
+              hjust = 1,
+              nudge_x = -0.025) + 
+    scale_x_continuous("No. comparisons (log scale)",
+                       trans = log_trans(),
+                       breaks = c(1, 2, 5, 10, 20, 50, 250)) +
+    scale_y_continuous("Width of 90% credible interval (log scale)",
+                       trans = log_trans(),
+                       breaks = c(2, 5, 10, 20)) +
+    geom_smooth(aes(colour = type, linetype = type), se = FALSE) + 
+    scale_shape_manual("Type", values = 0:2) +
+    scale_colour_discrete("Type") +
+    scale_linetype_discrete("Type", guide = "none") + 
+    theme_bw(base_size = 12) +
+    theme(legend.position = "bottom")
+```
+
+
+*Seventh,* uncertainty in the position of MPs is primarily a function of the number of times they were asked about and secondarily a function of whether they are new MPs. @fig-uncertainty shows the width of the 90% credible interval (logged, on the vertical axis) as a function of the number of comparisons (logged, on the horizontal scale). The three trend lines show nonlinear smooths for three groups of MPs: MPs who continued between both parliaments, MPs who left (voluntarily or otherwise) at the end of the 2019-2024 parliament, and MPs elected in the 2024 parliament but who did not sit in the 2019-2024 parliament. Although difficult to see on the graph, the trend line for "new" entrants is almost always higher than the trend line for the other two types of MPs.
+
+# Conclusion
+
+In this note we have described a method that we use for inferring the
+left-right positions of MPs from a survey of local councillors. This
+method, applied to this data, means that we can provide estimates of
+positions for almost all MPs, estimates which are informed by local
+knowledge and which come with estimates of uncertainty. These
+estimates will be useful for researchers who are interested in MPs'
+positions as an outcome (of, variously, initial selection, subsequent
+re-election, and possible de-selection) and MPs' positions as
+predictors of other outcomes (for example: cabinet recruitment and
+declarations of support in leadership contests). 
+
+We believe that these estimates of MP positions are superior to other
+existing estimates of MP positions. Estimates of MP positions based on
+co-sponsorship of early day motions are possible only for backbench
+MPs, and suffer from the problem that many fewer MPs now sign early
+day motions. Estimates from social media are only available for those
+MPs who are active on a specific social media platform, and exhibit
+lower correlation with expert placements of MPs. 
+
+This method is not perfect. It cannot be applied retrospectively and
+like any survey-based research it costs money. In addition when
+applied to a single parliamentary term -- particularly a parliamentary
+term where there are a large number of new MPs -- the degree of
+uncertainty may be very large indeed, such that we cannot discriminate
+between the positions of most new entrants. When applied to a single
+parliamentary term, there are also issues with regional isolates --
+areas where most MPs are uniformly to the left or right of the anchor
+MPs, and where other MPs appear as very left- or right-wing as a
+result. This issue arises in Scotland, where many MPs are to the left
+of both Keir Starmer and Rishi Sunak, and where Liberal Democrat and
+Conservative MPs appear very right-wing as a result, and in Essex,
+where many MPs are to the right of both Keir Starmer and Rishi Sunak,
+and where other MPs, including some Conservative MPs, can appear more
+left-wing than they may in fact be.
+
+We have motivated this note on the basis that these estimates can be
+*useful*. Whilst contributing useful data is important (and worthy of
+publication) we also think that our survey suggests some substantive
+conclusions. Specifically, it suggests that MPs' positions on the
+economic and sociocultural dimensions are so highly correlated that
+knowledgeable observers position the average MP in the same place on
+both dimensions. This does not imply that for any specific MP their
+positions on those dimensions are identical. For any high profile MP
+with a large public record, it is possible that knowledgeable
+observers might be able to identify different positions on both those
+domains. These individuals are, by definition, not average. More
+generally, for any MP it is possible that the MP does *in fact* have
+different positions on these dimensions, but that they have not said
+or done enough which would lead a knowledgeable observer to identify
+these contrasting positions correctly. As always, we can only infer
+positions or ideal points from what MPs do or say; no social science
+method is capable of peering into their soul. 
+
+# References

@@ -1,0 +1,132 @@
+---
+title: The appendix
+---
+
+
+The prior for the initial cutpoint $\tau^{\ast{}}_1$ is a normal
+distribution with a mean of -2 and a standard deviation of one
+half. What does this mean? It means that if the model is correct and
+respondents respond based only on the differences between MPs'
+positions, then the probability that MP A is described as much more
+right-wing than MP B *when in fact* A and B have the same position is
+low but not zero. Specifically, when we simulate from this
+distribution, pass it through the cumulative logistic function and
+calculate the average probability across many simulations, the
+probability is around one in eight. An alternative prior with a more
+negative mean or a smaller standard deviation would reduce this
+probability further; an alternative prior with a larger (more
+positive) mean or a larger standard deviation would increase this
+probability further. A probability of one in eight allows for
+respondents to hit the first option through error (encompassed by the
+model) or through a systematic preference for the first response
+option (not encompassed by the model).
+
+Now consider the priors for the two spacing parameters $\delta_1$ and
+$\delta_2$. These priors must be strictly positive if the thresholds
+are to be ordered. We just suggested that the first cutpoint might
+have an average value of -2. If responses are indeed symmetrical, then
+this implies that the last cutpoint should have a value of +2. This in
+turn implies that the expected value of $2 \cdot \delta_1 + \delta_2$
+should be around four. If, for simplicity, we adopt the same prior for
+$\delta_2$ as we do for $\delta_1$, then this suggests a prior of
+$N^{+}(0, \sqrt{3})$, since the sum of three independent half-normal
+distributions with standard deviations of $\sqrt{3}$ is close to four. 
+
+Although in our description of the model we considered shifts over
+time next, when discussing prior specificiations we find it more
+helpful to consider party next. Our model relies on party fixed
+effects relative to the reference party, the Conservatives. We adopt
+the same prior for party effects on the economic and cultural
+dimensions. This is a prior for a normal distribution with a mean of
+zero and a standard deviation of 4. This prior has to be interpreted
+in the light of the priors on the cut-offs. If the difference between
+the first and last cutpoints is four units, then we should be open to
+the possibility that party effects are as big as this
+difference. Setting a standard deviation of four units assigns a
+reasonably-large probability (~32%) to effects this large or greater. 
+
+<!-- --> 
+
+Having considered party, we can now consider the prior on the
+idiosyncratic legislator-specific elements of legislators' ideal
+points, net of their parties. These are drawn from a bivariate normal
+distribution with means of zero and an estimated covariance
+matrix. Rather than place a prior on the covariance matrix directly,
+we decompose the covariance matrix into the product of three
+matrices and place priors on elements of these matrices. That is, if
+
+$$
+\begin{bmatrix}
+\alpha^{Econ.} \\
+\alpha^{Cult.}
+\end{bmatrix} \sim
+N\left(
+\begin{bmatrix}
+0 \\
+0 
+\end{bmatrix},
+\symbf{\Sigma}
+\right)
+$$
+
+then:
+
+$$
+\symbf{\Sigma} = 
+\begin{bmatrix} 
+\sigma^{Econ.} & 0 \\
+0 & \sigma^{Cult.} 
+\end{bmatrix}
+\symbf{R}
+\begin{bmatrix} 
+\sigma^{Econ.} & 0 \\
+0 & \sigma^{Cult.} \\
+\end{bmatrix}
+$$
+
+Here the scale parameters come from a Cauchy distribution with a scale
+parameter equal to 2.5, and the correlation matrix comes from a LKJ
+distribution with parameter 4.
+
+
+```{r, eval = FALSE}
+n_sims <- 1e6
+a <- rcauchy(n_sims, location = 0, scale = 1)
+a2 <- rnorm(n_sims, 0, 1)
+b <- rnorm(n_sims, mean = 0, sd = 4)
+mean(abs(a) > abs(b))
+mean(abs(a2) > abs(b))
+```
+
+Now consider the shifts between 2023 and 2024. These shifts could be
+positive or negative, and we do not know in advance how large they
+will be. We therefore draw shifts from a normal distribution centred
+at zero but with an estimated standard deviation. We place a prior on
+this standard deviation, $\operatorname{Exponential}(10)$. This prior
+has a 95% credible interval running from 0.003 units to 0.385
+units. This prior is therefore (just) consistent with shifts 
+
+
+of one MP who *in fact* has the same position as another MP being
+described as being much more right-wing
+
+This prior is chosen so that it assigns very low probability to
+the initial cutpoint being positive. The initial cutpoint would only
+need to be positive if respondents were systematically choosing the
+first response option that they saw, such that it took a big
+difference to get past the first cutpoint and say that the first-named
+MP was only somewhat more right-wing. 
+
+The two spacing parameters $\delta_1$ and $\delta_2$ were assigned
+standard half-normal priors (i.e., a normal distribution truncated so
+that all values are positive). The prior on the first spacing
+parameter implies that when $mu_i > 0$ the respondent is *more likely
+than not* to say that the first-named MP is either somewhat or much
+more right-wing than the second-named MP.
+
+The party fixed effects on both the economic and cultural dimension
+are drawn from a normal distribution with a mean of zero and a
+standard deviation of 2.5. This weakly informative prior is chosen so
+that the... 
+
+
