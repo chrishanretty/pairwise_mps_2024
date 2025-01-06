@@ -1,7 +1,7 @@
 ---
 title: "The left-right positions of British MPs inferred from a survey of local councillors"
 published: "Working paper"
-code-repo: "Access the code, data, and analysis at <>"
+code-repo: "Access the code, data, and analysis at <https://github.com/chrishanretty/pairwise_mps_2024/>"
 correspondence-prefix: "Correspondence concerning this article should be addressed to"
 author:
   - name: Chris Hanretty
@@ -21,20 +21,21 @@ author:
       corresponding: true
   - name: Vasil Lazarov
     email: vasil.lazarov@survation.com
+    orcid: 0009-0009-3405-2718
     title: PhD student
     affiliations:
       - id: survation
         name: Survation
       - ref: rhul
-abstract: "We present local councillors in England, Wales and Scotland with pairwise comparisons between MPs in their local area and two anchor MPs and ask them to identify the more left-wing MP on economic issues (first and second survey waves) and on cultural issues (second wave only). We infer MPs' positions on the economic and cultural left-right dimension from the responses to these pairwise choices. The estimates of MPs' positions have good face validity, but our estimates or MPs' positions on the cultural dimension are nearly identical to our estimates of the MPs' positions on the economic dimension, suggesting that knowledgeable respondents cannot distinguish MPs' positions on these two dimensions. Our estimates can be used to study the effects of MPs' position on behaviour in the party and in the legislature. "
-thanks: "Thanks to Survation for hosting these questions on their omnibus survey of local councillors. Particular thanks to David Izamoje for setting up the script seen by councillors. "
+abstract: "We present local councillors in England, Wales and Scotland with pairwise comparisons between MPs in their local area and two anchor MPs and ask them to identify the more left-wing MP on economic issues (first and second survey waves) and on cultural issues (second wave only). We infer MPs' positions on the economic and cultural left-right dimension from the responses to these pairwise choices. The estimates of MPs' positions have good face validity, but our estimates of MPs' positions on the cultural dimension are nearly identical to our estimates of the MPs' positions on the economic dimension, suggesting that knowledgeable respondents cannot distinguish MPs' positions on these two dimensions. Our estimates can be used to study the effects of MPs' position on behaviour in the party and in the legislature. "
+thanks: "Thanks to Survation for hosting these questions on their omnibus survey of local councillors. Particular thanks to David Izamoje for setting up the script seen by councillors in the first wave. "
 additional-info: |
   We have no known conflict of interest to disclose.
 keywords:
   - expert survey
   - ideal points
   - ordinal regression
-date: January 2, 2025
+date: January 6, 2025
 bibliography: biblio.bib
 mainfont: "TeX Gyre Pagella"
 sansfont: "TeX Gyre Heros"
@@ -91,7 +92,7 @@ do not issue personal manifestos or policy platforms
 in the same way as (for example) the Comparative Manifesto Project
 scales political parties [@volkens2013mapping]. Although legislators
 do talk and vote in parliaments, these acts are often strategic:
-scaling techniques used successful to analyse congressional roll-calls
+scaling techniques used successfully to analyse congressional roll-calls
 can fail to recover left-right positions where there are strong
 government-opposition dynamics and where extremes of left and right
 join together to vote against the middle [@spirling2007uk].[^edms] The
@@ -205,7 +206,7 @@ respondents with up two six comparisons and asked them to say whether
 the first-named MP was much more *economically conservative*, somewhat
 more economically conservative, and so on. We then asked respondents
 to consider cultural issues. Once again we presented respondents with
-MPs to compare, but asked them to say which MPs was more *culturally
+MPs to compare, but asked them to say which MP was more *culturally
 conservative*. We asked respondents to pick the more *conservative* of
 the two MPs because we expected that some respondents would interpret
 "left" and "right" to have economic content only (such that we could
@@ -227,8 +228,7 @@ area. In the second wave of the survey, where a UTLA was represented
 by a single Westminster constituency, we grouped that UTLA with the
 contiguous UTLA represented by the fewest Westminster MPs. We then
 generate all pairwise comparisons of MPs serving those constituencies,
-*plus* the two anchor MPs, Sir Keir Starmer and Rishi Sunak. We ask
-include these two anchor MPs in order to place different local
+*plus* the two anchor MPs, Sir Keir Starmer and Rishi Sunak. We include these two anchor MPs in order to place different local
 comparisons on a national scale: all we would have would be a series
 of regional orderings of MPs with no overlap. We then keep all
 comparisons between local MPs, no comparisons between Sunak and
@@ -243,7 +243,24 @@ these, 120 are comparisons between Essex MPs; one is a comparison
 between Sunak and Starmer, and thirty-two are comparisons involving
 Sunak and Starmer. We keep all 120 comparisons between Essex MPs and
 two comparisons involving Sunak and Starmer. Of these 122 comparisons,
-we randomly show respondents six comparisons. 
+we randomly show respondents six comparisons. @fig-egs shows an example. 
+
+
+::: {#fig-egs layout-ncol=2 layout="[[10, -1, 10], [10, -1, 10]]"}
+
+![Economic dimension prompt](../examples/econ_preamble.png){#fig-econpreabmel}
+
+
+![Social dimension prompt](../examples/social_preamble.png){#fig-socialpreamble}
+
+![Economic dimension example](../examples/econ_example.png){#fig-econeg}
+
+![Social dimension example](../examples/social_example.png){#fig-socialeg}
+
+
+Preamble and example question seen by respondents
+:::
+
 
 [^southend]: Southend-on-Sea and Thurrock, as unitary authorities, are
     their own UTLAs.
